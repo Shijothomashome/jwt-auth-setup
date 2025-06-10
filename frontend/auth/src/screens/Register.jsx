@@ -21,7 +21,7 @@ const Register = () => {
         }
 
         try {
-            const response = await api.post('/register', { name, email, password });
+            const response = await api.post('/auth/register', { name, email, password });
             console.log('response', response)
             if (response.data.success === 'true') {
                 toast.success('Registration successful!');

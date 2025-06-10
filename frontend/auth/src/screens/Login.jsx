@@ -18,10 +18,10 @@ const Login = () => {
             return;
         }
         try {
-            const response = await api.post('/login', { email, password });
+            const response = await api.post('/auth/login', { email, password });
             if (response.data.success === 'true') {
                 toast.success('Login successful!');
-                navigate('/home', { state: { name: response.data?.user?.name } });
+                navigate('/', { state: { name: response.data?.user?.name } });
             } else {
                 console.error('Login failed:', response.data.message);
                 toast.error(response.data.message || 'Login failed', { duration: 3000 });

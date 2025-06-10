@@ -10,38 +10,41 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
-    // Redirect to the login page on logout
     try {
-      const response = await api.post('/logout')
-      if(response.data.success === 200){
-        toast.success( response.data.message || 'Logged out successfully.');
-        navigate('/login');
+      const response = await api.post('/auth/logout');
+      if (response.data.success === 'true') {
+        toast.success(response.data.message || 'Logged out successfully.');
       }
     } catch (error) {
-      toast.error(error.response.data.message)
+      toast.error(error.response?.data?.message || 'Logout failed.');
+    } finally {
+      navigate('/login');
     }
-    
-    navigate('/login');
   };
 
-  useEffect( () => {
-
-    const fetchUsers = async() => {
+  useEffect(() => {
+    const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/users');
+        const response = await api.get('/users'); // Protected route
         if (response.data.success === 'true') {
           setUsers(response.data.users);
         }
       } catch (error) {
-        console.error('Error while fetching users', error);
+        if (error.response?.status === 401) {
+          // Not authenticated → redirect
+          navigate('/login');
+        } else {
+          console.error('Error fetching users:', error);
+          toast.error('Something went wrong fetching users.');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [navigate]);
 
   return (
     <>
@@ -69,13 +72,12 @@ const Home = () => {
             ) : (
               users.map((user) => (
                 <li key={user.id}>{user.name} - {user.email}</li>
-            )))
-            }
+              ))
+            )}
           </ol>
         )}
       </div>
     </>
-
   );
 };
 
