@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
+import jwt from 'jsonwebtoken';
 import { pool } from "../config/db.js";
+import { generateAccessToken, generateRefrehToken } from "../config/utils.js";
 
 const registerController = async (req, res) => {
 
@@ -54,7 +56,7 @@ const loginController = async (req, res) => {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production' ? true : false,
                 sameSite: 'strict',
-                path: '/refresh',
+                path: '/',
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             })
             .cookie('accessToken', accessToken, {
@@ -81,8 +83,11 @@ const loginController = async (req, res) => {
 const refreshController = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
+        // console.log('req.cookies', req.cookies);
+        // console.log('refreshToken', refreshToken);
         if (!refreshToken) {
             return res
+            .clearCookie('refreshToken', { path: '/' })
                 .status(401)
                 .json({
                     success: 'false',
@@ -92,6 +97,7 @@ const refreshController = async (req, res) => {
         jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, user) => {
             if (err) {
                 return res
+                .clearCookie('refreshToken', { path: '/' })
                     .status(403)
                     .json({
                         success: 'false',

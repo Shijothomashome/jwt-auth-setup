@@ -1,3 +1,5 @@
+import { pool } from "../config/db.js";
+
 const listUserController =  async (req, res) => {
     const [users] = await pool.query('SELECT * FROM users');
     res.status(200)
